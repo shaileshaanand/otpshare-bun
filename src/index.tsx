@@ -22,14 +22,11 @@ const app = new Elysia()
     })
   )
   .decorate("db", drizzle(new Database(process.env.DB_PATH)))
-  .get("/", async ({ db }) => {
-    const otpList = await getLast10minuteOtps(db);
+  .get("/", async () => {
     return (
       <BaseHtml>
-        <div hx-get="/otp" hx-trigger="load, every 2s">
-          {otpList.map((otp) => {
-            return <Otp {...otp} />;
-          })}
+        <div class="p-12">
+          <div hx-get="/otp" hx-trigger="load, every 2s"></div>
         </div>
       </BaseHtml>
     );
@@ -37,10 +34,14 @@ const app = new Elysia()
   .get("/otp", async ({ db }) => {
     const otpList = await getLast10minuteOtps(db);
     return (
-      <div>
-        {otpList.map((otp) => {
-          return <Otp {...otp} />;
-        })}
+      <div class="flex gap-4 flex-wrap">
+        {otpList.length !== 0 ? (
+          otpList.map((otp) => {
+            return <Otp {...otp} />;
+          })
+        ) : (
+          <p>No OTPs</p>
+        )}
       </div>
     );
   })
@@ -62,7 +63,6 @@ const app = new Elysia()
               token,
               await jose.importX509(usedKey.cert, "RS256")
             );
-            console.log(res.payload.email);
             await db
               .update(otps)
               .set({ claimedBy: res.payload.email as string })
@@ -103,4 +103,5 @@ const app = new Elysia()
   )
   .listen(3000);
 
+// eslint-disable-next-line no-console
 console.log(`App started on ${app.server?.port}`);
