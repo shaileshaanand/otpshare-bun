@@ -3,12 +3,13 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"bun run --watch src/index.tsx\" \"bun run tw:dev\"",
+    "dev": "concurrently \"bun run --watch src/index.tsx\" \"bun run tw:dev\" \"bun run typecheck:watch\"",
     "tw": "bunx tailwindcss -i ./src/styles.css -o ./public/styles.css",
     "tw:dev": "bunx tailwindcss -i ./src/styles.css -o ./public/styles.css --watch",
+    "typecheck:watch": "tsc --watch",
     "generate": "drizzle-kit generate:sqlite",
     "migrate": "bun run src/db/migrate.ts",
-    "lint": "eslint .",
+    "lint": "eslint . && tsc",
     "lint:fix": "eslint . --fix"
   },
   "devDependencies": {
