@@ -63,11 +63,18 @@ const app = new Elysia()
               token,
               await jose.importX509(usedKey.cert, "RS256")
             );
-            await db
-              .update(otps)
-              .set({ claimedBy: res.payload.email as string })
-              .where(eq(otps.id, id))
-              .returning();
+            const otp = (
+              await db
+                .update(otps)
+                .set({ claimedBy: res.payload.email as string })
+                .where(eq(otps.id, id))
+                .returning()
+            )[0];
+            // eslint-disable-next-line no-console
+            console.log(
+              `OTP ${otp.otp} has been claimed by ${res.payload.email}.`
+            );
+
             return { status: "success" };
           } else {
             throw Error("Invalid Cookie");
@@ -94,6 +101,8 @@ const app = new Elysia()
     async ({ body, db, headers }) => {
       if (headers["x-api-key"] === process.env.API_SECRET) {
         const createdOtp = await db.insert(otps).values(body).returning();
+        // eslint-disable-next-line no-console
+        console.log(`OTP ${body.otp} has been created.`);
         return createdOtp;
       }
       return { status: "error" };
