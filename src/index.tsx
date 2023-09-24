@@ -91,9 +91,12 @@ const app = new Elysia()
   )
   .post(
     "/otp",
-    async ({ body, db }) => {
-      const createdOtp = await db.insert(otps).values(body).returning();
-      return createdOtp;
+    async ({ body, db, headers }) => {
+      if (headers["x-api-key"] === process.env.API_SECRET) {
+        const createdOtp = await db.insert(otps).values(body).returning();
+        return createdOtp;
+      }
+      return { status: "error" };
     },
     {
       body: t.Object({
